@@ -1,0 +1,17 @@
+State,Policy,Value
+A,Abortion,1
+A,Climate,0
+A,Death,1
+A,Marijuana,0
+B,Abortion,0.5
+B,Climate,0.5
+B,Death,1
+B,Marijuana,0.5
+C,Abortion,0.5
+C,Climate,1
+C,Death,1
+C,Marijuana,0.5
+D,Abortion,1
+D,Climate,0
+D,Death,0.5
+D,Marijuana,0.5
