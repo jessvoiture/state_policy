@@ -2,16 +2,20 @@ const width = 900;
 const height = 900;
 
 const padding = 10;
-const numStateCols = 2; // number of boxes in a waffle graph
-const numColsPolicy = 2; // number of boxes in a waffle graph
- 
-const numColsState = 4; // number of columns for state boxes
+
+const numStateCols = 2; // number of columns of state blocks
+const numStateRows = 2; // number of rows of state blocks
+
+const numColsPolicy = 2; // number of (policy) columns within state block
+const numRowsPolicy = 2; // number of (policy) rows within state block
  
 const blockHeight = 100;
 const blockWidth = 80;
 
-const translateFactor = width / numStateCols
-
+// based on predetermined row and column index (https://docs.google.com/spreadsheets/d/1otXRCqtpralMGWstBlecKwlJ0eia45Sgho_R6zvX8ow/edit?usp=sharing)
+// the TranslateFactor converts index to x and y coordinate based on size of svg 
+const widthTranslateFactor = width - (blockWidth * numColsPolicy) / (numStateCols - 1);
+const heightTranslateFactor = height - (blockHeight * numRowsPolicy) / (numStateRows - 1);
 
 const svg = d3.select(".map")
     .append("svg")
@@ -29,23 +33,23 @@ const div = d3.select(".map")
 
 d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_test_data_long.csv", d3.autoType).then(function(data){
     
-    // console.log(data);
+    console.log(data);
 
     const state_data = d3.group(data, d => d.State);
 
-    // console.log(state_data)    
-    // console.log(state_data.get("A")[0].state_col)
+    console.log(state_data)    
   
     let plots = svg.selectAll("g")
       .data(state_data)
       .enter()
       .append("g")
       .attr("class", "state")
-      .attr("transform", function(d, i) {
-        console.log(d[1][0].state_col) //  gets column of state block
-        console.log(d[1][0].state_row) // gets row of state block
-        return "translate(" + [i * ((width - (blockWidth * numColsPolicy)) / (numColsState - 1)), padding] + ")";
+      .attr("transform", function(d) {
+        // console.log(d[1][0].state_col) //  gets column of state block
+        // console.log(d[1][0].state_row) // gets row of state block
+        return "translate(" + [(d[1][0].state_col - 1) * widthTranslateFactor, (d[1][0].state_row - 1) * heightTranslateFactor] + ")";
       })
+
  
 
     plots
