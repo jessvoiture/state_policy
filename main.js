@@ -1,21 +1,38 @@
-const width = 900;
-const height = 900;
+const legend_keys = [
+  { Policy: 'Abortion', Detail: ""},
+  { Policy: 'CAP', Detail: ""},
+  { Policy: 'Death Penalty', Detail: ""},
+  { Policy: 'Guns', Detail: ""},
+  { Policy: 'Healthcare', Detail: ""},
+  { Policy: 'Homelessness', Detail: ""},
+  { Policy: 'LGBTQ+ Rights', Detail: ""},
+  { Policy: 'Incarceration', Detail: ""},
+  { Policy: 'Marijuana', Detail: ""},
+  { Policy: 'Maternity Leave', Detail: ""},
+  { Policy: 'Minimum Wage', Detail: ""},
+  { Policy: 'Police', Detail: ""}
+];
 
-const padding = 10;
+const width = 800;
+const height = 600;
 
-const numStateCols = 2; // number of columns of state blocks
-const numStateRows = 2; // number of rows of state blocks
+const padding = 11;
+const labelBoxSpace = 2; // space in between the State label and the State Plot
+const labelPadding = padding - labelBoxSpace;
 
-const numColsPolicy = 2; // number of (policy) columns within state block
-const numRowsPolicy = 2; // number of (policy) rows within state block
+const numStateCols = 11; // number of columns of state blocks
+const numStateRows = 8; // number of rows of state blocks
+
+const numColsPolicy = 4; // number of (policy) columns within state block
+const numRowsPolicy = 3; // number of (policy) rows within state block
  
-const blockHeight = 100;
-const blockWidth = 80;
+const blockHeight = 19;
+const blockWidth = 16;
 
 // based on predetermined row and column index (https://docs.google.com/spreadsheets/d/1otXRCqtpralMGWstBlecKwlJ0eia45Sgho_R6zvX8ow/edit?usp=sharing)
 // the TranslateFactor converts index to x and y coordinate based on size of svg 
-const widthTranslateFactor = width - (blockWidth * numColsPolicy) / (numStateCols - 1);
-const heightTranslateFactor = height - (blockHeight * numRowsPolicy) / (numStateRows - 1);
+const widthTranslateFactor = (width - (blockWidth * numColsPolicy)) / (numStateCols - 1);
+const heightTranslateFactor = ((height-padding) - (blockHeight * numRowsPolicy)) / (numStateRows - 1);
 
 const svg = d3.select(".map")
     .append("svg")
@@ -23,71 +40,264 @@ const svg = d3.select(".map")
     .attr("height", height);
 
 const colScale = d3.scaleOrdinal()
-    .range(["#7a36c2","#020005","#ebe70c", "#19a80c"])
-    .domain("Abortion", "Death", "Marijuana", "Climate");
+    .range(["#7a36c2","#5c4811","#ebe70c", "#19a80c", "#1453db", "#db14ad","#b2de14", "#2b2b28", "#c41d1d", "#18c9bb", "#2411d1", "#d17411"])
+    .domain(["Abortion", "Death Penalty", "Marijuana", "Guns", "CAP", "Maternity Leave", "Minimum Wage", "Incarceration", "Homelessness", "Healthcare", "Police", "LGBTQ+ Rights"]);
+
+const leg_det = d3.select(".policy_det")
+    // .append("ul")
+    .attr("class", "policy_list")
+    .style("opacity", 0)
 
 const div = d3.select(".map")
     .append("div")
     .attr("class", "tooltip")
-    .style("opacity", 0)
+    .style("opacity", 0);
 
-d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_test_data_long.csv", d3.autoType).then(function(data){
+const legendBlockWidth = 2.1 * blockWidth;
+const legendBlockHeight = 2.1 * blockHeight;
+
+const legendWidth = legendBlockWidth * numColsPolicy;
+const legendHeight = legendBlockHeight * numRowsPolicy;
+
+const legend = d3.select('.legend_graphic')
+    .append("svg")
+    .attr("width", legendWidth)
+    .attr("height", legendHeight);
+
+d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_test_data.csv?version=123", d3.autoType).then(function(data){
     
     console.log(data);
 
     const state_data = d3.group(data, d => d.State);
-
-    console.log(state_data)    
+    const policy_data = d3.group(data, d => d.Policy);
   
     let plots = svg.selectAll("g")
-      .data(state_data)
-      .enter()
-      .append("g")
-      .attr("class", "state")
-      .attr("transform", function(d) {
-        // console.log(d[1][0].state_col) //  gets column of state block
-        // console.log(d[1][0].state_row) // gets row of state block
-        return "translate(" + [(d[1][0].state_col - 1) * widthTranslateFactor, (d[1][0].state_row - 1) * heightTranslateFactor] + ")";
-      })
-
- 
+        .data(state_data)
+        .enter()
+        .append("g")
+        .attr("class", "state")
+        .attr("transform", function(d) {
+          // console.log(d[1][0].state_col) //  gets column of state block
+          // console.log(d[1][0].state_row) // gets row of state block
+          return "translate(" + [(d[1][0].state_col) * widthTranslateFactor, 
+                                ((d[1][0].state_row) * heightTranslateFactor) + padding] // add in padding so that top row labels will be visible
+                                + ")";
+          });
 
     plots
-      .selectAll(".rect")
-      .data(d => d[1])
-      .enter()
-      .append("rect")
-      .attr("class", function(d) { return d.Policy})
-      .attr("width", blockWidth)
-      .attr("height", blockHeight)
-      .attr("x", function(d, i){
-        var colIndex = i % numColsPolicy
-        return colIndex * blockWidth
-      })
-      .attr("y", function(d, i){
-        var rowIndex = Math.floor(i/numColsPolicy)
-        return rowIndex * blockHeight
-      })
-      .style("fill", function(d) { return colScale(d.Policy)})
-      .style("opacity", function(d) { return d.Value})
-    //   .on("mouseover", function(event, d) {
-    //     div.transition()
-    //         .duration(200)
-    //         .style("opacity", 1)
-    //     var element = d3.select(this)
-    //     element.style("stroke", "Black")
-    //     div.html("<span style = 'font-weight: bold'>" + d.Policy + "</span>" + "<br>" + 
-    //              "<span style = 'font-style: italic'>" + d.Value + "% of the top cast is a nepo baby" + "</span>")
-    //       .style("left", (event.pageX - 20) + "px")
-    //       .style("top", (event.pageY - 30) + "px");
-    //     })
-    //   .on("mouseout", function(d) {
-    //     div.transition()
-    //         .duration(100)
-    //         .style("opacity", 0);
-    //     var element = d3.select(this)
-    //     element.style("stroke", "none")
-    //     });
+        .selectAll(".rect")
+        .data(d => d[1])
+        .enter()
+        .append("rect")
+        .attr("class", function(d) { return d.Policy.replaceAll(' ', '_')})
+        .attr("width", blockWidth)
+        .attr("height", blockHeight)
+        .attr("x", function(d, i){
+            var colIndex = i % numColsPolicy
+            return colIndex * blockWidth
+            })
+        .attr("y", function(d, i){
+            var rowIndex = Math.floor(i/numColsPolicy)
+            return rowIndex * blockHeight
+            })
+        .style("fill", function(d) { return colScale(d.Policy) })
+        .style("fill-opacity", function(d) { return d.Value })
+        .style("stroke", "none")
+        .on("mouseover", function(event, d) {
 
+          div.transition()
+              .duration(200)
+              .style("opacity", 1)
 
+          var element = d3.select(this)
+          element.style("stroke", "Red")
+
+          div.html("<span class = state_tooltip_heading style = 'font-weight: bold'>" + d.State + ": " +  d.Policy + "</span>" + "<br>" +
+                  "<span class = state_tooltip_content style = 'font-style: italic'>" + d.Detail + "</span>")
+              .style("left", (event.pageX - 150) + "px")
+              .style("top", (event.pageY - 680) + "px");
+          })
+      .on("mouseout", function(d) {
+          div.transition()
+              .duration(100)
+              .style("opacity", 0);
+          var element = d3.select(this)
+          element.style("stroke", "none")
+          });
+
+    const labels = svg
+        .selectAll(".label")
+        .data(state_data)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("transform", function(d) {
+          // console.log(d[1][0].state_col) //  gets column of state block
+          // console.log(d[1][0].state_row) // gets row of state block
+          return "translate(" + [d[1][0].state_col * widthTranslateFactor, 
+                                 d[1][0].state_row * heightTranslateFactor + labelPadding] // translate by labelPadding so that top row labels are visible
+                                 + ")";
+          })
+        .style("text-anchor", "left")
+        .text(function(d) { return d[1][0].Code; })
+        .on("mouseover", function(event, d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", 1)
+
+            var element = d3.select(this)
+            element.style("fill", "Red")
+
+            div.html("<span class = state_tooltip_heading style = 'font-weight: bold'>" + d[1][0].State + "</span>" + "<br>" + 
+                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][0].Policy + ": " + d[1][0].Detail + "</span>" + "<br>" +
+                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][1].Policy + ": " + d[1][1].Detail + "</span>" + "<br>" + 
+                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][2].Policy + ": " + d[1][2].Detail + "</span>" + "<br>" + 
+                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][3].Policy + ": " + d[1][3].Detail + "</span>" + "<br>" +
+                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][4].Policy + ": " + d[1][4].Detail + "</span>" + "<br>")
+                .style("left", (event.pageX - 150) + "px")
+                .style("top", (event.pageY - 680) + "px");
+              })   
+        .on("mouseout", function(d) {
+            div.transition()
+                .duration(100)
+                .style("opacity", 0);
+
+            var element = d3.select(this)
+            element.style("fill", "Black")
+          });
+
+    legend
+        // .attr("transform", function(d) {
+        //   return "translate(" + [0, labelPadding] + ")";
+        //   })
+        .selectAll('legend')
+        .data(legend_keys)
+        .enter()
+        .append("rect")
+        .attr("class", 'legend')
+        .attr("width", legendBlockWidth)
+        .attr("height", legendBlockHeight)
+        .attr("x", function(d, i){
+            var colIndex = i % numColsPolicy
+            return colIndex * legendBlockWidth
+            })
+        .attr("y", function(d, i){
+            var rowIndex = Math.floor(i/numColsPolicy)
+            return rowIndex * legendBlockHeight
+            })
+        .style("fill", function(d) { return colScale(d.Policy) })
+        .on("mouseover", onMouseover)
+        .on("mouseout", onMouseout);
+
+    // legend 
+    //       .append('text')
+    //       .selectAll(".label")
+    //        .data(state_data)
+    //         .enter()
+    //         .append("text") 
+
+    function onMouseover(e, d) {
+
+        // tooltip display
+        div.transition()
+            .duration(200)
+            .style("opacity", 1)
+
+        var element = d3.select(this)
+        element.style("stroke", "Red") 
+
+        var chosen = d.Policy;
+        var chosenColor = colScale(chosen);
+
+        // map display  
+        // highlight the policy rect which match the fill color of the legend rect
+        d3.selectAll("rect")
+          // .selectAll(("." + d.Policy.replaceAll(' ', '_')))
+          .each(function(d){ policy = d3.select(this); 
+                            if (rgbToHex(policy.style("fill")) != chosenColor) { 
+                              policy.style("fill-opacity", 0.05)
+                            } else {
+                              policy.style("stroke", "Red")
+                            }
+                            });
+
+        // legend display  
+        leg_det
+           .style("opacity", 1)
+           .text(d.Policy);
+
+       }
+
+    function onMouseout() {
+        div.transition()
+            .duration(100)
+            .style("opacity", 0);
+            
+        var element = d3.select(this)
+        element.style("stroke", "none")
+
+        leg_det
+            .style("opacity", 0);
+
+        drawRestingState()
+      }
+     
+    // on Legend mouseout redraw the policy rects with the correct opacity 
+    function drawRestingState(){
+        plots
+          .selectAll("rect")
+          .style("fill-opacity", function(d) { return d.Value })
+          .style("stroke", "none");
+
+        legend
+          .selectAll("rect")
+          .style("fill-opacity", 1)
+    } 
+
+    // // displays every state information on specified policy
+    // function drawLegendDetail(selectedPolicy) {
+
+    //   var filtered = data.filter(function(d) {
+    //       return d["Policy"] === selectedPolicy 
+    //   });
+
+    //   console.log(filtered);
+
+    //   leg_det
+    //       .style("opacity", 1)
+    //       .selectAll('li')
+    //       .data(filtered)
+    //       .enter()
+    //       .append("li")
+    //       .attr("class", 'legend');
+      
+    //   leg_det
+    //       .selectAll('li')
+    //       .text(function(d) {
+    //         return d.Code + ": " + d.Detail
+    //       });
+
+    // };
+
+    // Convert rgb to hex
+    // in order to highlight policy rect in states from the legend mouseover, need to match color 
+    // mouseover returns color as hex but rect return color as rgb
+    function componentFromStr(numStr, percent) {
+        var num = Math.max(0, parseInt(numStr, 10));
+        return percent ?
+            Math.floor(255 * Math.min(100, num) / 100) : Math.min(255, num);
+    }
+    
+    function rgbToHex(rgb) {
+        var rgbRegex = /^rgb\(\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*\)$/;
+        var result, r, g, b, hex = "";
+        if ( (result = rgbRegex.exec(rgb)) ) {
+            r = componentFromStr(result[1], result[2]);
+            g = componentFromStr(result[3], result[4]);
+            b = componentFromStr(result[5], result[6]);
+    
+            hex = "#" + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        return hex;
+    }
 })
