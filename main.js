@@ -1,16 +1,16 @@
 const legend_keys = [
-  { Policy: 'Abortion', Detail: ""},
-  { Policy: 'CAP', Detail: ""},
-  { Policy: 'Death Penalty', Detail: ""},
-  { Policy: 'Guns', Detail: ""},
-  { Policy: 'Healthcare', Detail: ""},
-  { Policy: 'Homelessness', Detail: ""},
-  { Policy: 'LGBTQ+ Rights', Detail: ""},
-  { Policy: 'Incarceration', Detail: ""},
-  { Policy: 'Marijuana', Detail: ""},
-  { Policy: 'Maternity Leave', Detail: ""},
-  { Policy: 'Minimum Wage', Detail: ""},
-  { Policy: 'Police', Detail: ""}
+  { Policy: 'Abortion', Source: "Guttmacher", Metric: "Gestational limits on abortion"},
+  { Policy: 'CAP', Source: "See individual states", Metric: "Presence of a climate action plan"},
+  { Policy: 'Death Penalty', Source: "Death Penalty Information Center", Metric: "Legality of the death penalty"},
+  { Policy: 'Guns', Source: "Giffords", Metric: "Restrictions on assault weapons"},
+  { Policy: 'Healthcare', Source: "Medicaid", Metric: "Medicaid coverage to people who earn more than the federal poverty level (FPL)"},
+  { Policy: 'Homelessness', Source: "National Alliance to End Homelessness", Metric: "Homelessness per 10,000"},
+  { Policy: 'LGBTQ+ Rights', Source: "Human Rights Center", Metric: "Score on the HRC State Equality Index"},
+  { Policy: 'Incarceration', Source: "The Sentencing Project", Metric: "Incarceration per capita"},
+  { Policy: 'Marijuana', Source: "Wikipedia (it had good info)", Metric: "Legality of Marijuana"},
+  { Policy: 'Maternity Leave', Source: "National Partnership for Women & Families", Metric: "Maternity leave guaranteed by the State"},
+  { Policy: 'Minimum Wage', Source: "Department of Labor", Metric: "Basic minimum rate per hour"},
+  { Policy: 'Police', Source: "8 Can't Wait", Metric: "Score on 8 Can't Wait policies"}
 ];
 
 const width = 800;
@@ -46,7 +46,12 @@ const colScale = d3.scaleOrdinal()
 const leg_det = d3.select(".policy_det")
     // .append("ul")
     .attr("class", "policy_list")
+    .style("opacity", 1)
+    .text("Hover over the grid below to see which policy is which color");
+
+const cite_source = d3.select(".cite_source")
     .style("opacity", 0)
+    .text("sources go here");
 
 const div = d3.select(".map")
     .append("div")
@@ -76,6 +81,7 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .enter()
         .append("g")
         .attr("class", "state")
+        .attr("id", function(d) { return d[1][0].Code + "-plot"; })
         .attr("transform", function(d) {
           // console.log(d[1][0].state_col) //  gets column of state block
           // console.log(d[1][0].state_row) // gets row of state block
@@ -89,7 +95,8 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .data(d => d[1])
         .enter()
         .append("rect")
-        .attr("class", function(d) { return d.Policy.replaceAll(' ', '_')})
+        .attr("class", function(d) { return d.Policy.replaceAll(' ', '_');})
+        .attr("id", function(d) { return d.Code + "-" + d.Policy.replaceAll(' ', '_')})
         .attr("width", blockWidth)
         .attr("height", blockHeight)
         .attr("x", function(d, i){
@@ -106,17 +113,21 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .on("mouseover", function(event, d) {
 
           div.transition()
-              .duration(200)
-              .style("opacity", 1)
+              .duration(100)
+              .style("opacity", 1);
 
-          var element = d3.select(this)
-          element.style("stroke", "Red")
+          var element = d3.select(this);
+          element.style("stroke", "Red");
 
           div.html("<span class = state_tooltip_heading style = 'font-weight: bold'>" + d.State + ": " +  d.Policy + "</span>" + "<br>" +
                   "<span class = state_tooltip_content style = 'font-style: italic'>" + d.Detail + "</span>")
+              // .style("left", (element.attr("x") + x_trans) + "px")
+              // .style("top", (element.attr("y") + y_trans) + "px");
               .style("left", (event.pageX - 150) + "px")
-              .style("top", (event.pageY - 680) + "px");
+              .style("top", (event.pageY - 700) + "px");
+              // .attr("transform", "translate(" + [x_trans,  y_trans] + ")");
           })
+          
       .on("mouseout", function(d) {
           div.transition()
               .duration(100)
@@ -139,37 +150,9 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
                                  + ")";
           })
         .style("text-anchor", "left")
-        .text(function(d) { return d[1][0].Code; })
-        .on("mouseover", function(event, d) {
-            div.transition()
-                .duration(200)
-                .style("opacity", 1)
-
-            var element = d3.select(this)
-            element.style("fill", "Red")
-
-            div.html("<span class = state_tooltip_heading style = 'font-weight: bold'>" + d[1][0].State + "</span>" + "<br>" + 
-                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][0].Policy + ": " + d[1][0].Detail + "</span>" + "<br>" +
-                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][1].Policy + ": " + d[1][1].Detail + "</span>" + "<br>" + 
-                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][2].Policy + ": " + d[1][2].Detail + "</span>" + "<br>" + 
-                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][3].Policy + ": " + d[1][3].Detail + "</span>" + "<br>" +
-                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d[1][4].Policy + ": " + d[1][4].Detail + "</span>" + "<br>")
-                .style("left", (event.pageX - 150) + "px")
-                .style("top", (event.pageY - 680) + "px");
-              })   
-        .on("mouseout", function(d) {
-            div.transition()
-                .duration(100)
-                .style("opacity", 0);
-
-            var element = d3.select(this)
-            element.style("fill", "Black")
-          });
+        .text(function(d) { return d[1][0].Code; });
 
     legend
-        // .attr("transform", function(d) {
-        //   return "translate(" + [0, labelPadding] + ")";
-        //   })
         .selectAll('legend')
         .data(legend_keys)
         .enter()
@@ -189,19 +172,7 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .on("mouseover", onMouseover)
         .on("mouseout", onMouseout);
 
-    // legend 
-    //       .append('text')
-    //       .selectAll(".label")
-    //        .data(state_data)
-    //         .enter()
-    //         .append("text") 
-
     function onMouseover(e, d) {
-
-        // tooltip display
-        div.transition()
-            .duration(200)
-            .style("opacity", 1)
 
         var element = d3.select(this)
         element.style("stroke", "Red") 
@@ -224,20 +195,25 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         // legend display  
         leg_det
            .style("opacity", 1)
-           .text(d.Policy);
+           .text(d.Policy + ": " + d.Metric);
+
+        cite_source
+           .style("opacity", 1)
+           .text("Source: " + d.Source);
 
        }
 
     function onMouseout() {
-        div.transition()
-            .duration(100)
-            .style("opacity", 0);
             
         var element = d3.select(this)
         element.style("stroke", "none")
 
         leg_det
-            .style("opacity", 0);
+          .style("opacity", 1)
+          .text("Hover over the grid below to see which policy is which color")
+
+        cite_source
+          .style("opacity", 0);
 
         drawRestingState()
       }
@@ -253,31 +229,6 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
           .selectAll("rect")
           .style("fill-opacity", 1)
     } 
-
-    // // displays every state information on specified policy
-    // function drawLegendDetail(selectedPolicy) {
-
-    //   var filtered = data.filter(function(d) {
-    //       return d["Policy"] === selectedPolicy 
-    //   });
-
-    //   console.log(filtered);
-
-    //   leg_det
-    //       .style("opacity", 1)
-    //       .selectAll('li')
-    //       .data(filtered)
-    //       .enter()
-    //       .append("li")
-    //       .attr("class", 'legend');
-      
-    //   leg_det
-    //       .selectAll('li')
-    //       .text(function(d) {
-    //         return d.Code + ": " + d.Detail
-    //       });
-
-    // };
 
     // Convert rgb to hex
     // in order to highlight policy rect in states from the legend mouseover, need to match color 

@@ -11,6 +11,23 @@ div.tooltip {
     opacity: 0.5;   
 }
 
+body {
+    margin: 0%;
+}
+
+.title {
+    font-size: 48px;
+    color: black;
+    font-weight: bold;
+    font-variant: small-caps;
+    font-family: Palatino,Palatino Linotype,Palatino LT STD,Book Antiqua,Georgia,serif;
+    margin: 0;
+    padding-top: 1%;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
 /* state code labels */
 .label {
     font-family: Arial, Helvetica, sans-serif;
@@ -19,7 +36,7 @@ div.tooltip {
 }
 
 .map {
-    margin-top: 5%;
+    margin-top: 3%;
     margin-left: 10%;
     float: left;
     flex-wrap: wrap;
@@ -27,21 +44,21 @@ div.tooltip {
 
 /* container for legend stuff */
 .legend_panel {
-    margin-top: 3%;
+    margin-top: 2.5%;
     margin-right: 10%;
     width: 15%;
     float: right;
 }
-
 /* the example grid in the legend */
 .legend_graphic {
-    margin: 0%;
+    margin: 0%; padding: 0%;
     margin-right: 5%;
 }
 
 /* how to read header */
 h1 {
-    font-family: Arial, Helvetica, sans-serif;
+    font-variant: small-caps;
+    font-family: Palatino,Palatino Linotype,Palatino LT STD,Book Antiqua,Georgia,serif;
     font-size: 20px;
     font-weight: bold;
     margin-top: 0%;
@@ -61,18 +78,13 @@ h1 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     font-weight: bold;
-    padding-top: 5px;
-    padding-bottom: 10px;
+    padding-top: 3px;
+    padding-bottom: 15px;
 }
 
-/* ul {
-    padding:0;
-}
-
-li {
-    justify-content: left;
+.cite_source {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 10px;
-    margin: 0; padding: 0;
-    list-style-type: none;
-} */
+    font-size: 11px;
+    font-style: italic;
+    padding-top: 3px;
+}
