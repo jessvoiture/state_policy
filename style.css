@@ -1,5 +1,5 @@
 div.tooltip { 
-    position: relative;     
+    position: absolute;     
     text-align: left; 
     max-width: 200px;          
     height: auto;  
@@ -7,7 +7,7 @@ div.tooltip {
     font-family: Arial, Helvetica, sans-serif;   
     font-size: 12px;
     background: white; 
-    pointer-events: none;  
+    /* pointer-events: none;   */
     opacity: 0.5;   
 }
 

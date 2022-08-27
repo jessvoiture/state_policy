@@ -1,3 +1,4 @@
+// dataset used in legend
 const legend_keys = [
   { Policy: 'Abortion', Source: "Guttmacher", Metric: "Gestational limits on abortion"},
   { Policy: 'Climate Action', Source: "See individual states", Metric: "Presence of a climate action plan"},
@@ -26,7 +27,8 @@ const numStateRows = 8; // number of rows of state blocks
 const numColsPolicy = 4; // number of (policy) columns within state block
 const numRowsPolicy = 3; // number of (policy) rows within state block
  
-const blockHeight = 19;
+// blocks that make up individual policies
+const blockHeight = 19; 
 const blockWidth = 16;
 
 // based on predetermined row and column index (https://docs.google.com/spreadsheets/d/1otXRCqtpralMGWstBlecKwlJ0eia45Sgho_R6zvX8ow/edit?usp=sharing)
@@ -43,21 +45,24 @@ const colScale = d3.scaleOrdinal()
     .range(["#7a36c2","#5c4811","#ebe70c", "#1453db", "#19a80c", "#db14ad","#b2de14", "#2b2b28", "#c41d1d", "#18c9bb", "#2411d1", "#d17411"])
     .domain(["Abortion", "Death Penalty", "Marijuana", "Guns", "Climate Action", "Maternity Leave", "Minimum Wage", "Incarceration", "Homelessness", "Healthcare", "Police", "LGBTQ+ Rights"]);
 
+// says the policy when you hover over legend grid
 const leg_det = d3.select(".policy_det")
-    // .append("ul")
     .attr("class", "policy_list")
     .style("opacity", 1)
     .text("Hover over the grid below to see which policy is which color");
 
+// says the policy source when you hover over legend grid
 const cite_source = d3.select(".cite_source")
     .style("opacity", 0)
     .text("sources go here");
 
-const div = d3.select(".map")
+// tooltip
+const div = d3.select("body")
     .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+// dimensions for the grid for the legend
 const legendBlockWidth = 2.1 * blockWidth;
 const legendBlockHeight = 2.1 * blockHeight;
 
@@ -69,13 +74,14 @@ const legend = d3.select('.legend_graphic')
     .attr("width", legendWidth)
     .attr("height", legendHeight);
 
-d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_final.csv?version=123", d3.autoType).then(function(data){
+d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_data.csv", d3.autoType).then(function(data){
     
     console.log(data);
 
+    // group data by state
     const state_data = d3.group(data, d => d.State);
-    const policy_data = d3.group(data, d => d.Policy);
   
+    // create state plots
     let plots = svg.selectAll("g")
         .data(state_data)
         .enter()
@@ -83,13 +89,12 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .attr("class", "state")
         .attr("id", function(d) { return d[1][0].Code + "-plot"; })
         .attr("transform", function(d) {
-          // console.log(d[1][0].state_col) //  gets column of state block
-          // console.log(d[1][0].state_row) // gets row of state block
           return "translate(" + [(d[1][0].state_col) * widthTranslateFactor, 
                                 ((d[1][0].state_row) * heightTranslateFactor) + padding] // add in padding so that top row labels will be visible
                                 + ")";
           });
 
+    // create state grids + policies
     plots
         .selectAll(".rect")
         .data(d => d[1])
@@ -112,30 +117,42 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .style("stroke", "none")
         .on("mouseover", function(event, d) {
 
-          div.transition()
-              .duration(100)
-              .style("opacity", 1);
+            div.transition()
+                .duration(100)
+                .style("opacity", 1);
 
-          var element = d3.select(this);
-          element.style("stroke", "Red");
+            var element = d3.select(this);
+            element.style("stroke", "Red");
 
-          div.html("<span class = state_tooltip_heading style = 'font-weight: bold'>" + d.State + ": " +  d.Policy + "</span>" + "<br>" +
-                  "<span class = state_tooltip_content style = 'font-style: italic'>" + d.Detail + "</span>")
-              // .style("left", (element.attr("x") + x_trans) + "px")
-              // .style("top", (element.attr("y") + y_trans) + "px");
-              .style("left", (event.pageX - 150) + "px")
-              .style("top", (event.pageY - 700) + "px");
-              // .attr("transform", "translate(" + [x_trans,  y_trans] + ")");
+            div.html("<span class = state_tooltip_heading style = 'font-weight: bold'>" + d.State + ": " +  d.Policy + "</span>" + "<br>" +
+                    "<span class = state_tooltip_content style = 'font-style: italic'>" + d.Detail + "</span>")
+                .style("left", (event.pageX) + "px")
+                .style("top", (event.pageY - 30) + "px");
           })
           
       .on("mouseout", function(d) {
           div.transition()
-              .duration(100)
+              .duration(500)
               .style("opacity", 0);
           var element = d3.select(this)
           element.style("stroke", "none")
           });
 
+    // enables user to hover over the tooltip (so they can click on CAP link)
+    div
+        .on('mouseover', function(d) {
+            div
+                .transition()
+                .style("opacity", "1");
+        })
+        .on('mouseout', function(d) {
+            div
+                .transition()
+                .duration(500)
+                .style("opacity", "0");
+        });
+
+    // state post code labels on map
     const labels = svg
         .selectAll(".label")
         .data(state_data)
@@ -143,8 +160,6 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .append("text")
         .attr("class", "label")
         .attr("transform", function(d) {
-          // console.log(d[1][0].state_col) //  gets column of state block
-          // console.log(d[1][0].state_row) // gets row of state block
           return "translate(" + [d[1][0].state_col * widthTranslateFactor, 
                                  d[1][0].state_row * heightTranslateFactor + labelPadding] // translate by labelPadding so that top row labels are visible
                                  + ")";
@@ -152,6 +167,7 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         .style("text-anchor", "left")
         .text(function(d) { return d[1][0].Code; });
 
+    // creating legend grid in similar manner as before
     legend
         .selectAll('legend')
         .data(legend_keys)
@@ -183,8 +199,8 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         // map display  
         // highlight the policy rect which match the fill color of the legend rect
         d3.selectAll("rect")
-          // .selectAll(("." + d.Policy.replaceAll(' ', '_')))
           .each(function(d){ policy = d3.select(this); 
+                            // match by fill color
                             if (rgbToHex(policy.style("fill")) != chosenColor) { 
                               policy.style("fill-opacity", 0.05)
                             } else {
@@ -197,6 +213,7 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
            .style("opacity", 1)
            .text(d.Policy + ": " + d.Metric);
 
+        // source display
         cite_source
            .style("opacity", 1)
            .text("Source: " + d.Source);
@@ -215,6 +232,7 @@ d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets
         cite_source
           .style("opacity", 0);
 
+        // return to how the chart should look when no legend item is selected
         drawRestingState()
       }
      
