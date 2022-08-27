@@ -1,6 +1,6 @@
 const legend_keys = [
   { Policy: 'Abortion', Source: "Guttmacher", Metric: "Gestational limits on abortion"},
-  { Policy: 'CAP', Source: "See individual states", Metric: "Presence of a climate action plan"},
+  { Policy: 'Climate Action', Source: "See individual states", Metric: "Presence of a climate action plan"},
   { Policy: 'Death Penalty', Source: "Death Penalty Information Center", Metric: "Legality of the death penalty"},
   { Policy: 'Guns', Source: "Giffords", Metric: "Restrictions on assault weapons"},
   { Policy: 'Healthcare', Source: "Medicaid", Metric: "Medicaid coverage to people who earn more than the federal poverty level (FPL)"},
@@ -40,8 +40,8 @@ const svg = d3.select(".map")
     .attr("height", height);
 
 const colScale = d3.scaleOrdinal()
-    .range(["#7a36c2","#5c4811","#ebe70c", "#19a80c", "#1453db", "#db14ad","#b2de14", "#2b2b28", "#c41d1d", "#18c9bb", "#2411d1", "#d17411"])
-    .domain(["Abortion", "Death Penalty", "Marijuana", "Guns", "CAP", "Maternity Leave", "Minimum Wage", "Incarceration", "Homelessness", "Healthcare", "Police", "LGBTQ+ Rights"]);
+    .range(["#7a36c2","#5c4811","#ebe70c", "#1453db", "#19a80c", "#db14ad","#b2de14", "#2b2b28", "#c41d1d", "#18c9bb", "#2411d1", "#d17411"])
+    .domain(["Abortion", "Death Penalty", "Marijuana", "Guns", "Climate Action", "Maternity Leave", "Minimum Wage", "Incarceration", "Homelessness", "Healthcare", "Police", "LGBTQ+ Rights"]);
 
 const leg_det = d3.select(".policy_det")
     // .append("ul")
@@ -69,7 +69,7 @@ const legend = d3.select('.legend_graphic')
     .attr("width", legendWidth)
     .attr("height", legendHeight);
 
-d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_test_data.csv?version=123", d3.autoType).then(function(data){
+d3.csv("https://raw.githubusercontent.com/jessvoiture/state_policy/main/datasets/policy_final.csv?version=123", d3.autoType).then(function(data){
     
     console.log(data);
 

@@ -88,3 +88,16 @@ h1 {
     font-style: italic;
     padding-top: 3px;
 }
+
+a:link {
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #7a36c2;
+    text-decoration: underline;
+}
+
+a:visited {
+    text-decoration: wavy underline;
+}
